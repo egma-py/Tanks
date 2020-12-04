@@ -1,0 +1,13 @@
+^---^------------------^
+|ooo|oooooooooooooooooo|
+|ooo|oooooooooooooooooo|
+|ooo|oooooooooooooooooo|
+|ooo|oooooooooooooooooo|
+|ooo|ooo--------^oooooo|
+|ooooooooooooooo|oooooo|
+|ooooooooooooooo|oooooo|
+|ooooooooooooooo|oooooo|
+|oooo^------^ooo|oooooo|
+|ooooooooooooooo|oooooo|
+|oooooooooooooooooooooo|
+^----------------------^

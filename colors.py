@@ -1,0 +1,51 @@
+# Black and white shades
+BLACK = (0, 0, 0)
+PEARL = (234, 224, 200)
+WHITE = (255, 255, 255)
+CREAM = (255, 203, 218)
+LIGHT_GRAY = (200, 200, 200)
+GRAY = (160, 160, 160)
+DARK_GRAY = (120, 120, 120)
+
+# Red shade colors
+RED = (255, 47, 47)
+LIGHT_PINK = (255, 105, 159)
+PINK = (255, 85, 159)
+ORANGE = (255, 128, 0)
+DARK_RED = (128, 0, 0)
+DARK_ORANGE = (170, 66, 6)
+
+# Blue shade colors
+BLUE = (27, 0, 255)
+LIGHT_BLUE = (66, 145, 255)
+DARK_BLUE = (0, 33, 55)
+TURTLE = (0, 131, 110)
+AQUA = (124, 255, 244)
+SKY = (135, 206, 235)
+DARK_SKY = (73, 151, 208)
+
+# Green shade colors
+GREEN = (0, 247, 7)
+LIGHT_GREEN = (0, 255, 128)
+DARK_GREEN = (0, 128, 0)
+LIME = (174, 253, 108)
+SWAMP = (105, 131, 57)
+GRASS = (92, 172, 45)
+DARK_GRASS = (52, 132, 5)
+PINE = (23, 31, 4)
+PISTACHIO = (109, 245, 116)
+
+# Exotic colors
+LIGHT_YELLOW = (255, 255, 102)
+YELLOW = (255, 204, 0)
+DARK_YELLOW = (255, 180, 0)
+HONEY = (255, 219, 88)
+
+LIGHT_VIOLET = (200, 102, 204)
+VIOLET = (205, 0, 205)
+DARK_VIOLET = (128, 0, 130)
+
+LIGHT_BROWN = (168, 101, 64)
+BROWN = (85, 40, 12)
+DARK_BROWN = (62, 35, 0)
+CHOCOLATE = (102, 51, 0)
