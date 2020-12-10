@@ -99,7 +99,7 @@ pg.font.init()
 FPS = 30
 window_size = (854, 480)
 display_info = pg.display.Info()
-full_size = (display_info.current_h, display_info.current_w)
+full_size = (display_info.current_w, display_info.current_h)
 game_resolution = (24, 13)
 number_x = game_resolution[0]
 number_y = game_resolution[1]
