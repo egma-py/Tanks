@@ -1,7 +1,6 @@
 from colors import *
 from menu import *
 from game_objects import *
-from win32api import GetSystemMetrics
 
 import pygame as pg
 import pygame.draw as pgd
@@ -99,7 +98,8 @@ pg.font.init()
 
 FPS = 30
 window_size = (854, 480)
-full_size = (GetSystemMetrics(0), GetSystemMetrics(1))
+display_info = pg.display.Info()
+full_size = (display_info.current_h, display_info.current_w)
 game_resolution = (24, 13)
 number_x = game_resolution[0]
 number_y = game_resolution[1]
