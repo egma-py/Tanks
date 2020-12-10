@@ -90,3 +90,4 @@ def draw_ground(screen, Rect):
     
 def draw_corner(screen, Rect):
     pgd.rect(screen, DARK_GRAY, Rect)
+    pgd.rect(screen, BLACK, Rect, 3)
