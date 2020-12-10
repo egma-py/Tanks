@@ -117,12 +117,18 @@ game = False
 screen.fill(BACKGROUND)
 
 tank = Tank([[100, 100], (window_block_size, window_block_size)], LIGHT_GREEN)
+#enemy = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
+sensitive_objs = [tank]
 level1 = Level(get_level(1))
+walls_hp = level1.get_walls_hp()
+GROUND_COLOR = DARK_GRASS
+bullets = []
+explosions = []
 
 while not finished:
-    screen.fill(BACKGROUND)
+    screen.fill(GROUND_COLOR)
     if game:
-        pass #FIXME level blocks appear
+        pass #FIXME level's blocks appear
     clock.tick(FPS)
     mouse_pos = pg.mouse.get_pos()
     mouse_pressed = pg.mouse.get_pressed()
@@ -132,12 +138,34 @@ while not finished:
                                full_size, 
                                level1.resolution, 
                                screen)
-    level1.app(screen, block_params)
+    level1.app(screen, block_params, walls_hp)
     walls = Walls(level1, block_params)
-    tank.app(screen, mouse_pos)
-    tank.check_key_pressed(keys, walls.walls)
+    tank.app(screen, mouse_pos, fullscreen)
+    #enemy.app(screen, mouse_pos, fullscreen)
+    tank.check_key_pressed(keys, walls.walls, walls_hp)
+    for bullet in bullets:
+        bullet_removed = False
+        walls_hp = bullet.app(screen, walls.walls, walls_hp)
+        for obj in sensitive_objs:
+            if obj == tank:
+                pass
+            else:
+                bullet.check_objects(obj)
+        if not bullet.active:
+            bullet.explose(explosions, 
+                           FPS, 
+                           fullscreen, 
+                           full_block_size, 
+                           window_block_size)
+            bullets.remove(bullet)
+    for explosion in explosions:
+        explosion.app(screen)
+        for obj in sensitive_objs:
+            explosion.check_objects(obj)
+        if not explosion.active:
+            explosions.remove(explosion)
     for event in pg.event.get():
-        tank.check_keydown(event, walls.walls)
+        tank.check_keydown(event, walls.walls, walls_hp)
         if event.type == pg.KEYDOWN and event.key == pg.K_F11:
             fullscreen = check_fullscreen(event, 
                                           fullscreen, 
@@ -153,7 +181,14 @@ while not finished:
         if event.type == pg.QUIT:
             finished = True
         if event.type == pg.MOUSEBUTTONDOWN:
-            tank.in_wall(walls.walls)
+            if event.button == 1:
+                bullets.append(Bullet(tank, bullets, mouse_pos))
+            elif event.button == 3:
+                print(tank.hp)
+                #print(enemy.hp)
+            else:
+                pass
     pg.display.update()
+    
     
 pg.quit()
