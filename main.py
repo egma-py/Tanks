@@ -38,12 +38,12 @@ def define_grid(fullscreen, window_size, full_size, game_resolution, screen):
         block_size = min((full_size[0]//number_x), (full_size[1]//number_y))
         start_x = (full_size[0]-block_size*number_x)//2
         start_y = (full_size[1]-block_size*number_y)//2
-        return [start_x, start_y], (block_size, block_size)
+        #return [start_x, start_y], (block_size, block_size)
     else:
         block_size = min((window_size[0]//number_x), (window_size[1]//number_y))
         start_x = (window_size[0]-block_size*number_x)//2
         start_y = (window_size[1]-block_size*number_y)//2
-        return [start_x, start_y], (block_size, block_size)
+    return [start_x, start_y], (block_size, block_size)
     
     
 def recalculate_rect(obj, fullscreen, window_size, full_size, game_resolution):
@@ -79,7 +79,7 @@ def recalculate_params(obj):
     return params
 
 
-def check_fullscreen(event, fullscreen, window_size, full_size, BACKGROUND):
+def change_fullscreen(fullscreen, window_size, full_size, BACKGROUND):
     '''
     check buttons' push to change screen mode
     '''
@@ -93,6 +93,13 @@ def check_fullscreen(event, fullscreen, window_size, full_size, BACKGROUND):
     return fullscreen
     
 
+def change_window_mode(event, fullscreen, window_size, full_size, BACKGROUND, obj, game_resolution):
+    new_mode = check_fullscreen(event, fullscreen, window_size, full_size, BACKGROUND)
+    cannon_params = new_cannon_params(obj)
+    newRect = new_rect(obj, fullscreen, window_size, full_size, game_resolution)
+    return [new_mode, cannon_params, newRect]
+    
+    
 pg.init()
 pg.font.init()
 
@@ -114,11 +121,12 @@ pg.display.set_caption('TANKS')
 clock = pg.time.Clock()
 finished = False
 game = False
+tank_is_moving = [False, False, False, False]
 screen.fill(BACKGROUND)
 
-tank = Tank([[100, 100], (window_block_size, window_block_size)], LIGHT_GREEN)
-#enemy = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
-sensitive_objs = [tank]
+tank = Tank([[400, 137], (window_block_size, window_block_size)], LIGHT_GREEN)
+tank1 = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
+objs = [tank, tank1]
 level1 = Level(get_level(1))
 walls_hp = level1.get_walls_hp()
 GROUND_COLOR = DARK_GRASS
@@ -141,37 +149,52 @@ while not finished:
     level1.app(screen, block_params, walls_hp)
     walls = Walls(level1, block_params)
     tank.app(screen, mouse_pos, fullscreen)
-    #enemy.app(screen, mouse_pos, fullscreen)
-    tank.check_key_pressed(keys, walls.walls, walls_hp)
+    tank1.app(screen, mouse_pos, fullscreen)
+    tank1.move(walls, walls_hp, FPS)
+    tank.continue_move(walls.walls, walls_hp, tank_is_moving)
     for bullet in bullets:
         bullet_removed = False
-        walls_hp = bullet.app(screen, walls.walls, walls_hp)
-        for obj in sensitive_objs:
-            if obj == tank:
-                pass
-            else:
-                bullet.check_objects(obj)
+        walls_hp = bullet.app(screen, walls.walls, walls_hp, fullscreen)
+        for obj in objs:
+            if obj != tank:
+                obj.hp = bullet.check_hit(obj)
         if not bullet.active:
             bullet.explose(explosions, 
                            FPS, 
                            fullscreen, 
                            full_block_size, 
-                           window_block_size)
+                           window_block_size,
+                           True)
+            bullets.remove(bullet)
+        if bullet.in_enemy:
+            bullet.explose(explosions, 
+                           FPS, 
+                           fullscreen, 
+                           full_block_size, 
+                           window_block_size,
+                           False)
             bullets.remove(bullet)
     for explosion in explosions:
         explosion.app(screen)
-        for obj in sensitive_objs:
+        for obj in objs:
             explosion.check_objects(obj)
         if not explosion.active:
             explosions.remove(explosion)
     for event in pg.event.get():
-        tank.check_keydown(event, walls.walls, walls_hp)
-        if event.type == pg.KEYDOWN and event.key == pg.K_F11:
-            fullscreen = check_fullscreen(event, 
-                                          fullscreen, 
-                                          window_size,
-                                          full_size,
-                                          BACKGROUND)
+        if event.type == pg.KEYDOWN:
+            controls = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]
+            if event.key in controls:
+                tank_is_moving = tank.move(event, walls.walls, walls_hp, tank_is_moving)
+        if event.type == pg.KEYUP:
+            controls = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]
+            if event.key in controls:
+                tank_is_moving = tank.stop(event, tank_is_moving)
+        if event.type == pg.KEYDOWN and event.key == pg.K_F11: #FIXME компактность
+            # Change window mode
+            fullscreen = change_fullscreen(fullscreen, 
+                                           window_size,
+                                           full_size,
+                                           BACKGROUND)
             tank.Rect = recalculate_rect(tank, 
                                          fullscreen, 
                                          window_size, 
@@ -185,7 +208,8 @@ while not finished:
                 bullets.append(Bullet(tank, bullets, mouse_pos))
             elif event.button == 3:
                 print(tank.hp)
-                #print(enemy.hp)
+                print(tank1.hp)
+                print(tank1.freeze)
             else:
                 pass
     pg.display.update()

@@ -1,6 +1,7 @@
 from colors import *
 from menu import *
 from textures import *
+from random import randint
 
 import pygame.draw as pgd
 import pygame as pg
@@ -70,44 +71,76 @@ class Tank:
                 pgd.line(screen, RED, self.center, (new_cannon_x, new_cannon_y), self.cannon_w)
                 pgd.circle(screen, RED, (new_cannon_x, new_cannon_y), self.cannon_r)
     
-    def check_keydown(self, event, walls, walls_hp):
-        if event.type == pg.KEYDOWN and event.key == pg.K_RIGHT:
+    
+    def move(self, event, walls, walls_hp, moving):
+        up = moving[0]
+        down = moving[1]
+        right = moving[3]
+        left = moving[2]
+        if event.key == pg.K_RIGHT:
+            right = True
             self.x += self.speed
             if self.in_wall(walls, walls_hp):
                 self.x -= self.speed
-        if event.type == pg.KEYDOWN and event.key == pg.K_LEFT:
+        if event.key == pg.K_LEFT:
+            left = True
             self.x -= self.speed
             if self.in_wall(walls, walls_hp):
                 self.x += self.speed
-        if event.type == pg.KEYDOWN and event.key == pg.K_UP:
+        if event.key == pg.K_UP:
+            up = True
             self.y -= self.speed
             if self.in_wall(walls, walls_hp):
                 self.y += self.speed
-        if event.type == pg.KEYDOWN and event.key == pg.K_DOWN:
+        if event.key == pg.K_DOWN:
+            down = True
             self.y += self.speed
             if self.in_wall(walls, walls_hp):
                 self.y -= self.speed
         self.Rect[0] = [self.x, self.y]
+        moving = [up, down, left, right]
+        return moving
     
     
-    def check_key_pressed(self, keys, walls, walls_hp):
-        if keys[275] == 1:
+    def continue_move(self, walls, walls_hp, moving):
+        right = moving[3] 
+        left = moving[2]
+        down = moving[1]
+        up = moving[0]
+        if right:
             self.x += self.speed
             if self.in_wall(walls, walls_hp):
                 self.x -= self.speed
-        if keys[276] == 1:
+        if left:
             self.x -= self.speed
             if self.in_wall(walls, walls_hp):
                 self.x += self.speed
-        if keys[273] == 1:
-            self.y -= self.speed
-            if self.in_wall(walls, walls_hp):
-                self.y += self.speed
-        if keys[274] == 1:
+        if down:
             self.y += self.speed
             if self.in_wall(walls, walls_hp):
                 self.y -= self.speed
+        if up:
+            self.y -= self.speed
+            if self.in_wall(walls, walls_hp):
+                self.y += self.speed
         self.Rect[0] = [self.x, self.y]
+        
+        
+    def stop(self, event, moving):
+        up = moving[0]
+        down = moving[1]
+        left = moving[2]
+        right = moving[3]
+        if event.key == pg.K_UP:
+            up = False
+        if event.key == pg.K_DOWN:
+            down = False
+        if event.key == pg.K_LEFT:
+            left = False
+        if event.key == pg.K_RIGHT:
+            right = False
+        moving = [up, down, left, right]
+        return moving
         
         
     def in_wall(self, walls, walls_hp):
@@ -169,17 +202,19 @@ class Enemy:
         self.cannon_r = self.params[1]
         self.cannon_w = self.params[2]
         self.tower_r = self.params[3]
-        self.speed = 3
+        self.speed_x = 0
+        self.speed_y = 2
+        self.angle = 0
+        self.freeze = 0
         self.hp = 20
-        self.center = (self.x + self.Rect[1][0]//2,
-                       self.y + self.Rect[1][0]//2)
+        self.center = [self.x + self.Rect[1][0]//2,
+                       self.y + self.Rect[1][0]//2]
         
         
     def app(self, screen, mouse_pos, fullscreen):
         if fullscreen:
-            self.speed = 6
-        else:
-            self.speed = 3
+            self.speed_x = 2*self.speed_x
+            self.speed_y = 2*self.speed_y
         self.center = [self.x + self.Rect[1][0]//2,
                        self.y + self.Rect[1][0]//2]
         self.cannon_l = self.params[0]
@@ -190,29 +225,154 @@ class Enemy:
         size = (int(self.Rect[1][0]*0.8), int(self.Rect[1][1]*0.8))
         pgd.rect(screen, self.color, (tank_pos, size))
         pgd.circle(screen, RED, self.center, self.tower_r)
-        if (self.center[1] - mouse_pos[1]) > 0:
-            arctg = m.atan((mouse_pos[0] - self.center[0])/(self.center[1] - mouse_pos[1]))
-            new_cannon_x = int(self.center[0] + self.cannon_l*m.sin(arctg))
-            new_cannon_y = int(self.center[1] - self.cannon_l*m.cos(arctg))
-            pgd.line(screen, RED, self.center, (new_cannon_x, new_cannon_y), self.cannon_w)
-            pgd.circle(screen, RED, (new_cannon_x, new_cannon_y), self.cannon_r)
-        elif (self.center[1] - mouse_pos[1]) < 0:
-            arctg = m.atan((mouse_pos[0] - self.center[0])/(self.center[1] - mouse_pos[1]))
-            new_cannon_x = int(self.center[0] - self.cannon_l*m.sin(arctg))
-            new_cannon_y = int(self.center[1] + self.cannon_l*m.cos(arctg))
-            pgd.line(screen, RED, self.center, (new_cannon_x, new_cannon_y), self.cannon_w)
-            pgd.circle(screen, RED, (new_cannon_x, new_cannon_y), self.cannon_r)
-        else:
-            if (self.center[0] - mouse_pos[0]) > 0:
-                new_cannon_x = self.center[0] - self.cannon_l
-                new_cannon_y = self.center[1]
-                pgd.line(screen, RED, self.center, (new_cannon_x, new_cannon_y), self.cannon_w)
-                pgd.circle(screen, RED, (new_cannon_x, new_cannon_y), self.cannon_r)
-            else:
-                new_cannon_x = self.center[0] + self.cannon_l
-                new_cannon_y = self.center[1]
-                pgd.line(screen, RED, self.center, (new_cannon_x, new_cannon_y), self.cannon_w)
-                pgd.circle(screen, RED, (new_cannon_x, new_cannon_y), self.cannon_r)
+        if self.angle == 0:
+            cannon_pos = (self.center[0], self.center[1]+self.cannon_l)
+            pgd.line(screen, RED, self.center, cannon_pos, self.cannon_w)
+            pgd.circle(screen, RED, cannon_pos, self.cannon_r)
+        if self.angle == 90:
+            cannon_pos = (self.center[0]-self.cannon_l, self.center[1])
+            pgd.line(screen, RED, self.center, cannon_pos, self.cannon_w)
+            pgd.circle(screen, RED, cannon_pos, self.cannon_r)
+        if self.angle == 180:
+            cannon_pos = (self.center[0], self.center[1]-self.cannon_l)
+            pgd.line(screen, RED, self.center, cannon_pos, self.cannon_w)
+            pgd.circle(screen, RED, cannon_pos, self.cannon_r)
+        if self.angle == 270:
+            cannon_pos = (self.center[0]+self.cannon_l, self.center[1])
+            pgd.line(screen, RED, self.center, cannon_pos, self.cannon_w)
+            pgd.circle(screen, RED, cannon_pos, self.cannon_r)
+        
+        
+    def move(self, blocks, walls_hp, FPS):
+        #print(self.freeze)
+        close_turns = self.close_turns(blocks.turns)
+        if self.freeze > 0:
+            self.freeze -= 1
+        if not self.in_wall(blocks.walls, walls_hp):
+            self.x += self.speed_x
+            self.y += self.speed_y
+        elif self.in_wall(blocks.walls, walls_hp):
+            self.x -= self.speed_x
+            self.y -= self.speed_y
+            self.rotate()
+        if self.in_turn(close_turns) == True and self.freeze == 0 and self.in_wall(blocks.walls, walls_hp) == False:
+            self.rotate()
+            self.freeze = 2*FPS
+            
+            
+    def rotate(self):
+        direction_number = randint(1, 4)
+        if direction_number == 1:
+            direction = 'right'
+        if direction_number == 2:
+            direction = 'left'
+        if direction_number == 3:
+            direction = 'up'
+        if direction_number == 4:
+            direction = 'down'
+        if direction == 'right':
+            self.angle = 270
+            self.speed_x = 2
+            self.speed_y = 0
+        if direction == 'left':
+            self.angle = 90
+            self.speed_x = -2
+            self.speed_y = 0
+        if direction == 'up':
+            self.angle = 180
+            self.speed_x = 0
+            self.speed_y = -2
+        if direction == 'down':
+            self.angle = 0
+            self.speed_x = 0
+            self.speed_y = 2
+            
+            
+    def in_turn(self, turns):
+        close_turns = self.close_turns(turns)
+        #print(close_turns)
+        def check_in_turn(pos):
+            x = pos[0]
+            y = pos[1]
+            check = False
+            for turn in close_turns:
+                if x>turn[0][0][0] and x<(turn[0][0][0]+turn[0][1][0]):
+                    if y>(turn[0][0][1]) and y<(turn[0][0][1]+turn[0][1][1]):
+                        check = True
+            return check
+        inturn = False
+        pos = (self.x + int(self.Rect[1][0]*0.1), self.y + int(self.Rect[1][1]*0.1))
+        x = pos[0]
+        y = pos[1]
+        block_size = int(self.Rect[1][0]*0.8)
+        right_top = (x + block_size, y)
+        left_top = (x, y)
+        right_down = (x + block_size, y + block_size)
+        left_down = (x, y + block_size)
+        for turn in close_turns:    
+            if check_in_turn(right_top):
+                if check_in_turn(left_top):
+                    if check_in_turn(right_down):
+                        if check_in_turn(left_down):
+                            inturn = True
+        return inturn
+    
+    
+    def close_turns(self, turns):
+        block_size = int(self.Rect[1][0]*0.8)
+        x, y = self.x, self.y
+        close_turns = []
+        for i in range(len(turns)):
+            dx = x - turns[i][0][0][0]
+            dy = y - turns[i][0][0][1]
+            if abs(dx)<2*block_size and abs(dy)<2*block_size:
+                close_turns.append(turns[i])
+        return close_turns
+            
+            
+    def in_wall(self, walls, walls_hp):
+        close_walls = self.close_walls(walls, walls_hp)
+        def check_in_wall(pos):
+            x = pos[0]
+            y = pos[1]
+            check = False
+            for wall in close_walls:
+                if x>=wall[0][0][0] and x<=(wall[0][0][0]+wall[0][1][0]):
+                    if y>=(wall[0][0][1]) and y<=(wall[0][0][1]+wall[0][1][1]):
+                        check = True
+            return check
+        inwall = False
+        pos = (self.x + int(self.Rect[1][0]*0.1), self.y + int(self.Rect[1][1]*0.1))
+        x = pos[0]
+        y = pos[1]
+        block_size = int(self.Rect[1][0]*0.8)
+        right_top = (x + block_size, y)
+        left_top = (x, y)
+        right_down = (x + block_size, y + block_size)
+        left_down = (x, y + block_size)
+        for wall in close_walls:    
+            if check_in_wall(right_top):
+                inwall = True
+            if check_in_wall(left_top):
+                inwall = True
+            if check_in_wall(right_down):
+                inwall = True
+            if check_in_wall(left_down):
+                inwall = True
+        return inwall
+    
+    
+    def close_walls(self, walls, walls_hp):
+        block_size = int(self.Rect[1][0]*0.8)
+        x, y = self.x, self.y
+        close_walls = []
+        for i in range(len(walls)):
+            dx = x - walls[i][0][0][0]
+            dy = y - walls[i][0][0][1]
+            wall_hp = walls_hp[i][0]
+            if abs(dx)<2*block_size and abs(dy)<2*block_size and wall_hp != 0:
+                close_walls.append(walls[i])
+        return close_walls
 
 
 class Bullet:
@@ -223,6 +383,7 @@ class Bullet:
     def __init__(self, tank, bullets, mouse_pos):
         self.block_size = tank.Rect[1][0]
         self.active = True
+        self.in_enemy = False
         self.radius = 6
         cannon_pos = [tank.x + tank.Rect[1][0]//2, 
                       tank.y + tank.Rect[1][1]//2]
@@ -251,7 +412,11 @@ class Bullet:
             self.speed_y = int(Bullet.speed*m.cos(angle))
             
         
-    def app(self, screen, walls, walls_hp):
+    def app(self, screen, walls, walls_hp, fullscreen):
+        if fullscreen:
+            self.radius = 8
+        else:
+            self.radius = 6
         pgd.circle(screen, BLACK, (self.x, self.y), self.radius)
         check_params = self.in_wall(walls, walls_hp)
         wall = check_params[1]
@@ -268,13 +433,14 @@ class Bullet:
         return walls_hp
             
             
-    def explose(self, explosions, FPS, fullscreen, full_block, window_block):
+    def explose(self, explosions, FPS, fullscreen, full_block, window_block, dangerous):
             explosions.append(Explosion(self.x, 
                                         self.y, 
                                         FPS,
                                         fullscreen,
                                         full_block,
-                                        window_block))
+                                        window_block,
+                                        dangerous))
         
         
     def close_walls(self, walls, walls_hp):
@@ -322,6 +488,19 @@ class Bullet:
             self.active = False
 
 
+    def check_hit(self, enemy):
+        left_x = enemy.x
+        right_x = enemy.x + enemy.Rect[1][0]
+        up_y = enemy.y
+        down_y = enemy.y + enemy.Rect[1][0]
+        if right_x > self.x > left_x and down_y > self.y > up_y:
+            self.in_enemy = True
+            return enemy.hp - 2
+        else:
+            return enemy.hp
+        
+
+
 class Explosion:
     '''
     when a bullet crashes into smth,
@@ -329,13 +508,14 @@ class Explosion:
     an explosion, which can harm all
     the breakable objects
     '''
-    def __init__(self, x, y, FPS, fullscreen, full_block, window_block):
+    def __init__(self, x, y, FPS, fullscreen, full_block, window_block, dangerous):
         self.x = x
         self.y = y
         self.explosion_time = FPS//6
         self.time = self.explosion_time
         self.radius = 0
         self.active = True
+        self.dangerous = dangerous
         if fullscreen:
             self.max_radius = full_block
         else:
@@ -350,11 +530,12 @@ class Explosion:
             
     
     def check_objects(self, sensitive_obj): 
-        obj_pos = sensitive_obj.center
-        distance = m.sqrt((self.x-obj_pos[0])**2+(self.y-obj_pos[1])**2)
-        if distance <= self.radius:
-            sensitive_obj.hp -= 1
-            self.active = False
+        if self.dangerous:
+            obj_pos = sensitive_obj.center
+            distance = m.sqrt((self.x-obj_pos[0])**2+(self.y-obj_pos[1])**2)
+            if distance <= self.radius:
+                sensitive_obj.hp -= 1
+                self.active = False
 
 
 class Trap:
@@ -373,6 +554,7 @@ class Walls:
         start_x = block_params[0][0]
         start_y = block_params[0][1]
         self.walls = []
+        self.turns = []
         i, j = 0, 0
         for block_line in level.blocks:
             for block in block_line:
@@ -382,10 +564,22 @@ class Walls:
                 j += 1
                 if block == '-' or block == '^' or block == '|':
                     self.walls.append([Rect, -1])
-                elif block == 'V' or block == '':
+                elif block == 'V' or block == 'H':
                     self.walls.append([Rect, 3])
             i += 1
             j = 0
+        i, j = 0, 0
+        for block_line in level.blocks:
+            for block in block_line:
+                Rect = ((start_x + block_size*j,
+                         start_y + block_size*i), 
+                        (block_size, block_size))
+                j += 1
+                if block == 't':
+                    self.turns.append([Rect, -1])
+            i += 1
+            j = 0
+            
 
 class Shelter:
     pass
@@ -416,15 +610,11 @@ class Level:
         for block_line in self.blocks:
             for block in block_line:
                 j += 1
-                if block == '-':
+                if block in '-|^':
                     walls_hp.append([-1, 1])
-                if block == '|':
-                    walls_hp.append([-1, 1])
-                if block == '^':
-                    walls_hp.append([-1, 1])
-                if block == 'V':
+                if block in 'VH':
                     walls_hp.append([3, 1])
-                if block == 'o':
+                if block in 'ot':
                     pass #ground block
             i += 1
             j = 0
@@ -441,6 +631,7 @@ class Level:
                 Rect = ((start_x + block_size*k,
                          start_y + block_size*m), 
                         (block_size, block_size))
+                # drawing walls
                 if self.blocks[m][k] == '-':
                     index += 1
                     draw_wall_horizontal(screen, Rect)
@@ -454,7 +645,9 @@ class Level:
                     if walls_hp[index] != [0, 0]:
                         draw_wall_breakable_vertical(screen, Rect, 0)
                     index += 1
-                if self.blocks[m][k] == 'o':
-                    pass #ground block
+                if self.blocks[m][k] == 'H':
+                    if walls_hp[index] != [0, 0]:
+                        draw_wall_breakable_horizontal(screen, Rect, 0)
+                    index += 1
         
         
