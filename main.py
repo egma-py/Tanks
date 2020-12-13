@@ -1,6 +1,7 @@
 from colors import *
 from menu import *
 from game_objects import *
+from random import randint
 
 import pygame as pg
 import pygame.draw as pgd
@@ -106,6 +107,19 @@ def change_fullscreen(fullscreen, window_size, full_size, BACKGROUND):
         screen.fill(BACKGROUND)
     return fullscreen
 
+
+def spawn_actions(objs, enemies, spawn, window_block_size, full_block_size, fullscreen):
+    born = randint(1, 100)
+    if born == 100:
+        if fullscreen:
+            new_enemy = Enemy([spawn, (full_block_size, full_block_size)], BLACK)
+        else:
+            new_enemy = Enemy([spawn, (window_block_size, window_block_size)], BLACK)
+        enemies.append(new_enemy)
+        objs.append(new_enemy)
+    
+
+
 pg.init()
 pg.font.init()
 
@@ -131,10 +145,10 @@ tank_is_moving = [False, False, False, False]
 screen.fill(BACKGROUND)
 
 tank = Tank([[400, 137], (window_block_size, window_block_size)], LIGHT_GREEN)
-tank1 = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
-tank2 = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
-objs = [tank, tank1, tank2]
-enemies = [tank1, tank2]
+#tank1 = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
+#tank2 = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
+objs = [tank]
+enemies = []
 level1 = Level(get_level(1))
 walls_hp = level1.get_walls_hp()
 GROUND_COLOR = DARK_GRASS
@@ -144,6 +158,7 @@ explosions = []
 traps = []
 enemy_traps = []
 bonuses = []
+spawn = None
 
 while not finished:
     screen.fill(GROUND_COLOR)
@@ -158,7 +173,8 @@ while not finished:
                                full_size,
                                level1.resolution,
                                screen)
-    level1.app(screen, block_params, walls_hp)
+    spawn = level1.app(screen, block_params, walls_hp)
+    spawn_actions(objs, enemies, spawn, window_block_size, full_block_size, fullscreen)
     walls = Walls(level1, block_params)
     for bonus in bonuses:
         bonus.app(screen, fullscreen)
@@ -250,6 +266,8 @@ while not finished:
             explosion.check_objects(obj)
         if not explosion.active:
             explosions.remove(explosion)
+    if tank.hp <= 0:
+        finished = True
     for event in pg.event.get():
         if event.type == pg.KEYDOWN:
             controls = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]

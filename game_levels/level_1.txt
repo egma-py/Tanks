@@ -1,7 +1,7 @@
 ^-------------^
-|otoot--tooott|
-|-o-^toot--^oo|
-|ttt|o--H---oo|
+|oooot--tooott|
+|oso^toot--^oo|
+|tot|o--H---oo|
 |o-tttootttott|
 |o-tHH---HH--o|
 |--tVtototVtot|

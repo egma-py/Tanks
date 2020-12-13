@@ -805,7 +805,7 @@ class Level:
                     walls_hp.append([-1, 1])
                 if block in 'VH':
                     walls_hp.append([3, 1])
-                if block in 'ot':
+                if block in 'ots':
                     pass  # ground block
             i += 1
             j = 0
@@ -839,3 +839,6 @@ class Level:
                     if walls_hp[index] != [0, 0]:
                         draw_wall_breakable_horizontal(screen, Rect, 0)
                     index += 1
+                if self.blocks[m][k] == 's':
+                    spawn = [Rect[0][0] + 5, Rect[0][1] + 5]
+        return spawn
