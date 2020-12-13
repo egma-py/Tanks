@@ -68,6 +68,20 @@ def recalculate_rect(obj, fullscreen, window_size, full_size, game_resolution):
     return [[obj.x, obj.y], block_size]
 
 
+def recalculate_coords(obj, fullscreen, window_size, full_size, game_resolution):
+    '''
+    recalculates game parameters
+    when screen mode changes
+    '''
+    if fullscreen:
+        obj.x = (full_size[0] * obj.x) // window_size[0]
+        obj.y = (full_size[1] * obj.y) // window_size[1]
+    else:
+        obj.x = (window_size[0] * obj.x) // full_size[0]
+        obj.y = (window_size[1] * obj.y) // full_size[1]
+    return obj.x, obj.y
+
+
 def recalculate_params(obj):
     '''
     the same as recalculate_rect()
@@ -129,6 +143,7 @@ enemy_bullets = []
 explosions = []
 traps = []
 enemy_traps = []
+bonuses = []
 
 while not finished:
     screen.fill(GROUND_COLOR)
@@ -145,8 +160,13 @@ while not finished:
                                screen)
     level1.app(screen, block_params, walls_hp)
     walls = Walls(level1, block_params)
+    for bonus in bonuses:
+        bonus.app(screen, fullscreen)
+        bonus.check_tank(tank, FPS)
+        if not bonus.active:
+            bonuses.remove(bonus)
     for trap in traps:
-        trap.app(screen)
+        trap.app(screen, fullscreen)
         for obj in objs:
             if obj != tank:
                 obj.hp = trap.check_objs(obj)
@@ -159,7 +179,7 @@ while not finished:
                          False)
             traps.remove(trap)
     for trap in enemy_traps:
-        trap.app(screen)
+        trap.app(screen, fullscreen)
         tank.hp = trap.check_objs(tank)
         if not trap.active:
             trap.explose(explosions,
@@ -174,11 +194,12 @@ while not finished:
         enemy.app(screen, mouse_pos, enemy_bullets, enemy_traps)
         enemy.move(walls, walls_hp, FPS, fullscreen)
         if enemy.hp <= 0:
-            enemy.die(explosions, 
-                      FPS, 
-                      fullscreen, 
-                      full_block_size, 
-                      window_block_size, 
+            enemy.die(bonuses,
+                      explosions,
+                      FPS,
+                      fullscreen,
+                      full_block_size,
+                      window_block_size,
                       False)
             enemies.remove(enemy)
             objs.remove(enemy)
@@ -251,17 +272,35 @@ while not finished:
                                             full_size,
                                             game_resolution)
                 obj.params = recalculate_params(obj)
+            for bonus in bonuses:
+                bonus.x, bonus.y = recalculate_coords(bonus,
+                                                      fullscreen,
+                                                      window_size,
+                                                      full_size,
+                                                      game_resolution)
+            for trap in traps:
+                trap.x, trap.y = recalculate_coords(trap,
+                                                    fullscreen,
+                                                    window_size,
+                                                    full_size,
+                                                    game_resolution)
+            for trap in enemy_traps:
+                trap.x, trap.y = recalculate_coords(trap,
+                                                    fullscreen,
+                                                    window_size,
+                                                    full_size,
+                                                    game_resolution)
         if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
             traps.append(Trap(tank, 'tank'))
         if event.type == pg.QUIT:
             finished = True
         if event.type == pg.MOUSEBUTTONDOWN:
             if event.button == 1:
-                bullets.append(Bullet(tank, bullets, mouse_pos))
+                if tank.ammo > 0:
+                    bullets.append(Bullet(tank, bullets, mouse_pos))
+                    tank.ammo -= 1
             elif event.button == 3:
-                print(tank.hp)
-                print(tank1.hp)
-                print(tank1.speed_x, tank1.speed_y)
+                print(bonuses)
     pg.display.update()
 
 pg.quit()

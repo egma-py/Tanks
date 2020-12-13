@@ -29,15 +29,21 @@ class Tank:
         self.tower_r = self.params[3]
         self.speed = 3
         self.hp = 20
+        self.ammo = 100
+        self.boost_time = 0
         self.center = (self.x + self.Rect[1][0] // 2,
                        self.y + self.Rect[1][0] // 2)
 
-
     def app(self, screen, mouse_pos, fullscreen):
-        if fullscreen:
-            self.speed = 6
+        if self.boost_time > 0:
+            self.boost_time -= 1
+            k = 1.5
         else:
-            self.speed = 3
+            k = 1
+        if fullscreen:
+            self.speed = int(6 * k)
+        else:
+            self.speed = int(3 * k)
         self.center = [self.x + self.Rect[1][0] // 2,
                        self.y + self.Rect[1][0] // 2]
         self.cannon_l = self.params[0]
@@ -72,7 +78,6 @@ class Tank:
                 pgd.line(screen, RED, self.center, (new_cannon_x, new_cannon_y), self.cannon_w)
                 pgd.circle(screen, RED, (new_cannon_x, new_cannon_y), self.cannon_r)
 
-
     def move(self, event, walls, walls_hp, moving):
         up = moving[0]
         down = moving[1]
@@ -102,7 +107,6 @@ class Tank:
         moving = [up, down, left, right]
         return moving
 
-
     def continue_move(self, walls, walls_hp, moving):
         right = moving[3]
         left = moving[2]
@@ -126,7 +130,6 @@ class Tank:
                 self.y += self.speed
         self.Rect[0] = [self.x, self.y]
 
-
     def stop(self, event, moving):
         up = moving[0]
         down = moving[1]
@@ -143,9 +146,9 @@ class Tank:
         moving = [up, down, left, right]
         return moving
 
-
     def in_wall(self, walls, walls_hp):
         close_walls = self.close_walls(walls, walls_hp)
+
         def check_in_wall(pos):
             x = pos[0]
             y = pos[1]
@@ -155,6 +158,7 @@ class Tank:
                     if y >= (wall[0][0][1]) and y <= (wall[0][0][1] + wall[0][1][1]):
                         check = True
             return check
+
         inwall = False
         pos = (self.x + int(self.Rect[1][0] * 0.1), self.y + int(self.Rect[1][1] * 0.1))
         x = pos[0]
@@ -174,7 +178,6 @@ class Tank:
             if check_in_wall(left_down):
                 inwall = True
         return inwall
-
 
     def close_walls(self, walls, walls_hp):
         block_size = int(self.Rect[1][0] * 0.8)
@@ -213,7 +216,6 @@ class Enemy:
         self.center = [self.x + self.Rect[1][0] // 2,
                        self.y + self.Rect[1][0] // 2]
 
-
     def app(self, screen, mouse_pos, enemy_bullets, enemy_traps):
         if self.hp > 0:
             self.shoot_factor = randint(1, 100)
@@ -249,24 +251,29 @@ class Enemy:
                 pgd.line(screen, RED, self.center, cannon_pos, self.cannon_w)
                 pgd.circle(screen, RED, cannon_pos, self.cannon_r)
 
-
-    def die(self, explosions, FPS, fullscreen, full_block, window_block, dangerous):
+    def die(self, bonuses, explosions, FPS, fullscreen, full_block, window_block, dangerous):
         explosions.append(Explosion(self.x,
                                     self.y,
                                     FPS,
                                     fullscreen,
                                     full_block,
                                     window_block,
-                                    dangerous))      
-
+                                    dangerous))
+        bonus = randint(1, 4)
+        if bonus == 4:
+            bonus_type = randint(1, 3)
+            if bonus_type == 1:
+                bonuses.append(Bonus(self, 'HP'))
+            elif bonus_type == 2:
+                bonuses.append(Bonus(self, 'Ammo'))
+            elif bonus_type == 3:
+                bonuses.append(Bonus(self, 'Speed'))
 
     def shoot(self, enemy_bullets):
         enemy_bullets.append(EnemyBullet(self, enemy_bullets))
 
-
     def make_trap(self, enemy_traps):
         enemy_traps.append(Trap(self, 'enemy'))
-
 
     def move(self, blocks, walls_hp, FPS, fullscreen):
         if fullscreen:
@@ -278,16 +285,15 @@ class Enemy:
             if self.freeze > 0:
                 self.freeze -= 1
             if not self.in_wall(blocks.walls, walls_hp):
-                self.x += self.speed_x*k
-                self.y += self.speed_y*k
+                self.x += self.speed_x * k
+                self.y += self.speed_y * k
             elif self.in_wall(blocks.walls, walls_hp):
-                self.x -= self.speed_x*k
-                self.y -= self.speed_y*k
+                self.x -= self.speed_x * k
+                self.y -= self.speed_y * k
                 self.rotate()
             if self.in_turn(close_turns) == True and self.freeze == 0 and self.in_wall(blocks.walls, walls_hp) == False:
                 self.rotate()
                 self.freeze = 2 * FPS
-
 
     def rotate(self):
         direction_number = randint(1, 4)
@@ -316,9 +322,9 @@ class Enemy:
             self.speed_x = 0
             self.speed_y = 2
 
-
     def in_turn(self, turns):
         close_turns = self.close_turns(turns)
+
         def check_in_turn(pos):
             x = pos[0]
             y = pos[1]
@@ -328,6 +334,7 @@ class Enemy:
                     if y > (turn[0][0][1]) and y < (turn[0][0][1] + turn[0][1][1]):
                         check = True
             return check
+
         inturn = False
         pos = (self.x + int(self.Rect[1][0] * 0.1), self.y + int(self.Rect[1][1] * 0.1))
         x = pos[0]
@@ -345,7 +352,6 @@ class Enemy:
                             inturn = True
         return inturn
 
-
     def close_turns(self, turns):
         block_size = int(self.Rect[1][0] * 0.8)
         x, y = self.x, self.y
@@ -357,9 +363,9 @@ class Enemy:
                 close_turns.append(turns[i])
         return close_turns
 
-
     def in_wall(self, walls, walls_hp):
         close_walls = self.close_walls(walls, walls_hp)
+
         def check_in_wall(pos):
             x = pos[0]
             y = pos[1]
@@ -369,6 +375,7 @@ class Enemy:
                     if y >= (wall[0][0][1]) and y <= (wall[0][0][1] + wall[0][1][1]):
                         check = True
             return check
+
         inwall = False
         pos = (self.x + int(self.Rect[1][0] * 0.1), self.y + int(self.Rect[1][1] * 0.1))
         x = pos[0]
@@ -388,7 +395,6 @@ class Enemy:
             if check_in_wall(left_down):
                 inwall = True
         return inwall
-
 
     def close_walls(self, walls, walls_hp):
         block_size = int(self.Rect[1][0] * 0.8)
@@ -432,7 +438,6 @@ class EnemyBullet:
             self.speed_x = 20
             self.speed_y = 0
 
-
     def app(self, screen, walls, walls_hp, fullscreen):
         if fullscreen:
             self.radius = 8
@@ -453,7 +458,6 @@ class EnemyBullet:
             self.y += self.speed_y
         return walls_hp
 
-
     def check_hit(self, tank):
         left_x = tank.x
         right_x = tank.x + tank.Rect[1][0]
@@ -465,7 +469,6 @@ class EnemyBullet:
         else:
             return tank.hp
 
-
     def explose(self, explosions, FPS, fullscreen, full_block, window_block, dangerous):
         explosions.append(Explosion(self.x,
                                     self.y,
@@ -474,7 +477,6 @@ class EnemyBullet:
                                     full_block,
                                     window_block,
                                     dangerous))
-
 
     def close_walls(self, walls, walls_hp):
         block_size = int(self.block_size)
@@ -488,9 +490,9 @@ class EnemyBullet:
                 close_walls.append(walls[i])
         return close_walls
 
-
     def in_wall(self, walls, walls_hp):
         close_walls = self.close_walls(walls, walls_hp)
+
         def check_in_wall(pos):
             x = pos[0]
             y = pos[1]
@@ -502,6 +504,7 @@ class EnemyBullet:
                         check = True
                         crash_wall = wall
             return (check, crash_wall)
+
         inwall = False
         current_bullet_pos = (self.x, self.y)
         check_params = check_in_wall(current_bullet_pos)
@@ -518,6 +521,7 @@ class Bullet:
     is created when a user presses left mouse button
     '''
     speed = 20
+
     def __init__(self, tank, bullets, mouse_pos):
         self.block_size = tank.Rect[1][0]
         self.active = True
@@ -549,7 +553,6 @@ class Bullet:
             self.speed_x = int(Bullet.speed * m.sin(angle))
             self.speed_y = int(Bullet.speed * m.cos(angle))
 
-
     def app(self, screen, walls, walls_hp, fullscreen):
         if fullscreen:
             self.radius = 8
@@ -570,7 +573,6 @@ class Bullet:
             self.y += self.speed_y
         return walls_hp
 
-
     def explose(self, explosions, FPS, fullscreen, full_block, window_block, dangerous):
         explosions.append(Explosion(self.x,
                                     self.y,
@@ -579,7 +581,6 @@ class Bullet:
                                     full_block,
                                     window_block,
                                     dangerous))
-
 
     def close_walls(self, walls, walls_hp):
         block_size = int(self.block_size)
@@ -593,9 +594,9 @@ class Bullet:
                 close_walls.append(walls[i])
         return close_walls
 
-
     def in_wall(self, walls, walls_hp):
         close_walls = self.close_walls(walls, walls_hp)
+
         def check_in_wall(pos):
             x = pos[0]
             y = pos[1]
@@ -607,6 +608,7 @@ class Bullet:
                         check = True
                         crash_wall = wall
             return (check, crash_wall)
+
         inwall = False
         current_bullet_pos = (self.x, self.y)
         check_params = check_in_wall(current_bullet_pos)
@@ -616,7 +618,6 @@ class Bullet:
             self.x = wall[0][0][0] + wall[0][1][0] // 2
             self.y = wall[0][0][1] + wall[0][1][0] // 2
         return [inwall, check_params[1]]
-
 
     def check_hit(self, enemy):
         left_x = enemy.x
@@ -651,14 +652,12 @@ class Explosion:
         else:
             self.max_radius = window_block
 
-
     def app(self, screen):
         pgd.circle(screen, ORANGE, (self.x, self.y), int(self.radius))
         self.time -= 1
         self.radius += self.max_radius / self.explosion_time
         if self.time == 0:
             self.active = False
-
 
     def check_objects(self, sensitive_obj):
         if self.dangerous:
@@ -672,17 +671,18 @@ class Explosion:
 class Trap:
     def __init__(self, obj, whose):
         self.type = whose
-        self.pos = obj.center
-        self.x = self.pos[0]
-        self.y = self.pos[1]
+        self.x = obj.center[0]
+        self.y = obj.center[1]
         self.active = True
         self.r = 5
 
-
-    def app(self, screen):  # FIXME мигание
+    def app(self, screen, fullscreen):  # FIXME мигание
+        if fullscreen:
+            self.r = 10
+        else:
+            self.r = 5
         if self.type == 'tank':
-            pgd.circle(screen, BLUE, self.pos, self.r)
-
+            pgd.circle(screen, BLUE, (self.x, self.y), self.r)
 
     def check_objs(self, obj):
         x = obj.x
@@ -692,7 +692,6 @@ class Trap:
             return obj.hp - 4
         else:
             return obj.hp
-
 
     def explose(self, explosions, FPS, fullscreen, full_block, window_block, dangerous):
         explosions.append(Explosion(self.x,
@@ -711,6 +710,7 @@ class Walls:
     only with walls to control tank's
     motion
     '''
+
     def __init__(self, level, block_params):
         block_size = block_params[1][0]
         start_x = block_params[0][0]
@@ -743,8 +743,37 @@ class Walls:
             j = 0
 
 
-class Shelter:
-    pass
+class Bonus:
+    def __init__(self, enemy, bonus_type):
+        self.x = enemy.center[0]
+        self.y = enemy.center[1]
+        self.type = bonus_type
+        self.active = True
+
+    def app(self, screen, fullscreen):
+        if fullscreen:
+            self.r = 12
+        else:
+            self.r = 6
+        if self.type == 'HP':
+            pgd.circle(screen, RED, (self.x, self.y), self.r)
+        elif self.type == 'Ammo':
+            pgd.circle(screen, YELLOW, (self.x, self.y), self.r)
+        elif self.type == 'Speed':
+            pgd.circle(screen, BLUE, (self.x, self.y), self.r)
+
+    def check_tank(self, tank, FPS):
+        block_size = tank.Rect[1][0] * 0.8
+        x = tank.x
+        y = tank.y
+        if x < self.x < x + block_size and y < self.y < y + block_size:
+            self.active = False
+            if self.type == 'HP':
+                tank.hp += 10
+            elif self.type == 'Ammo':
+                tank.ammo += 20
+            elif self.type == 'Speed':
+                tank.boost_time += FPS * 5
 
 
 class HUD:
@@ -757,6 +786,7 @@ class Level:
     and type of blocks in current level.
     The info about a level is read from file
     '''
+
     def __init__(self, blocks):
         self.blocks = blocks
         max_block_len = 0
@@ -764,7 +794,6 @@ class Level:
             if len(block_line) >= max_block_len:
                 max_block_len = len(block_line)
         self.resolution = (max_block_len, len(blocks))
-
 
     def get_walls_hp(self):
         walls_hp = []
@@ -781,7 +810,6 @@ class Level:
             i += 1
             j = 0
         return walls_hp
-
 
     def app(self, screen, block_params, walls_hp):
         block_size = block_params[1][0]
@@ -811,4 +839,3 @@ class Level:
                     if walls_hp[index] != [0, 0]:
                         draw_wall_breakable_horizontal(screen, Rect, 0)
                     index += 1
-
