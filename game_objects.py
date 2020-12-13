@@ -204,14 +204,18 @@ class Enemy:
         self.angle = 0
         self.freeze = 0
         self.shoot_factor = 0
+        self.trap_factor = 0
         self.hp = 20
         self.center = [self.x + self.Rect[1][0] // 2,
                        self.y + self.Rect[1][0] // 2]
 
-    def app(self, screen, mouse_pos, fullscreen, enemy_bullets):
+    def app(self, screen, mouse_pos, fullscreen, enemy_bullets, enemy_traps):
         self.shoot_factor = randint(1, 100)
+        self.trap_factor = randint(1, 200)
         if self.shoot_factor == 100:
             self.shoot(enemy_bullets)
+        if self.trap_factor == 200:
+            self.make_trap(enemy_traps)
         if fullscreen:
             self.speed_x = 2 * self.speed_x
             self.speed_y = 2 * self.speed_y
@@ -244,6 +248,9 @@ class Enemy:
 
     def shoot(self, enemy_bullets):
         enemy_bullets.append(EnemyBullet(self, enemy_bullets))
+
+    def make_trap(self, enemy_traps):
+        enemy_traps.append(Trap(self, 'enemy'))
 
     def move(self, blocks, walls_hp, FPS):
         close_turns = self.close_turns(blocks.turns)
@@ -635,7 +642,35 @@ class Explosion:
 
 
 class Trap:
-    pass
+    def __init__(self, obj, whose):
+        self.type = whose
+        self.pos = obj.center
+        self.x = self.pos[0]
+        self.y = self.pos[1]
+        self.active = True
+        self.r = 5
+
+    def app(self, screen):  # FIXME мигание
+        if self.type == 'tank':
+            pgd.circle(screen, BLUE, self.pos, self.r)
+
+    def check_objs(self, obj):
+        x = obj.x
+        y = obj.y
+        if x < self.x < x + obj.Rect[1][0] and y < self.y < y + obj.Rect[1][0]:
+            self.active = False
+            return obj.hp - 4
+        else:
+            return obj.hp
+
+    def explose(self, explosions, FPS, fullscreen, full_block, window_block, dangerous):
+        explosions.append(Explosion(self.x,
+                                    self.y,
+                                    FPS,
+                                    fullscreen,
+                                    full_block,
+                                    window_block,
+                                    dangerous))
 
 
 class Walls:

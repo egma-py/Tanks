@@ -125,6 +125,8 @@ GROUND_COLOR = DARK_GRASS
 bullets = []
 enemy_bullets = []
 explosions = []
+traps = []
+enemy_traps = []
 
 while not finished:
     screen.fill(GROUND_COLOR)
@@ -141,8 +143,32 @@ while not finished:
                                screen)
     level1.app(screen, block_params, walls_hp)
     walls = Walls(level1, block_params)
+    for trap in traps:
+        trap.app(screen)
+        for obj in objs:
+            if obj != tank:
+                obj.hp = trap.check_objs(obj)
+        if not trap.active:
+            trap.explose(explosions,
+                         FPS,
+                         fullscreen,
+                         full_block_size,
+                         window_block_size,
+                         False)
+            traps.remove(trap)
+    for trap in enemy_traps:
+        trap.app(screen)
+        tank.hp = trap.check_objs(tank)
+        if not trap.active:
+            trap.explose(explosions,
+                         FPS,
+                         fullscreen,
+                         full_block_size,
+                         window_block_size,
+                         False)
+            enemy_traps.remove(trap)
     tank.app(screen, mouse_pos, fullscreen)
-    tank1.app(screen, mouse_pos, fullscreen, enemy_bullets)
+    tank1.app(screen, mouse_pos, fullscreen, enemy_bullets, enemy_traps)
     tank1.move(walls, walls_hp, FPS)
     tank.continue_move(walls.walls, walls_hp, tank_is_moving)
     for bullet in enemy_bullets:
@@ -212,6 +238,8 @@ while not finished:
                                          full_size,
                                          game_resolution)
             tank.params = recalculate_params(tank)
+        if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
+            traps.append(Trap(tank, 'tank'))
         if event.type == pg.QUIT:
             finished = True
         if event.type == pg.MOUSEBUTTONDOWN:
@@ -220,6 +248,7 @@ while not finished:
             elif event.button == 3:
                 print(tank.hp)
                 print(tank1.hp)
+                print(traps)
             else:
                 pass
     pg.display.update()
