@@ -118,7 +118,9 @@ screen.fill(BACKGROUND)
 
 tank = Tank([[400, 137], (window_block_size, window_block_size)], LIGHT_GREEN)
 tank1 = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
-objs = [tank, tank1]
+tank2 = Enemy([[600, 100], (window_block_size, window_block_size)], BLACK)
+objs = [tank, tank1, tank2]
+enemies = [tank1, tank2]
 level1 = Level(get_level(1))
 walls_hp = level1.get_walls_hp()
 GROUND_COLOR = DARK_GRASS
@@ -168,8 +170,18 @@ while not finished:
                          False)
             enemy_traps.remove(trap)
     tank.app(screen, mouse_pos, fullscreen)
-    tank1.app(screen, mouse_pos, fullscreen, enemy_bullets, enemy_traps)
-    tank1.move(walls, walls_hp, FPS)
+    for enemy in enemies:
+        enemy.app(screen, mouse_pos, enemy_bullets, enemy_traps)
+        enemy.move(walls, walls_hp, FPS, fullscreen)
+        if enemy.hp <= 0:
+            enemy.die(explosions, 
+                      FPS, 
+                      fullscreen, 
+                      full_block_size, 
+                      window_block_size, 
+                      False)
+            enemies.remove(enemy)
+            objs.remove(enemy)
     tank.continue_move(walls.walls, walls_hp, tank_is_moving)
     for bullet in enemy_bullets:
         walls_hp = bullet.app(screen, walls.walls, walls_hp, fullscreen)
@@ -232,12 +244,13 @@ while not finished:
                                            window_size,
                                            full_size,
                                            BACKGROUND)
-            tank.Rect = recalculate_rect(tank,
-                                         fullscreen,
-                                         window_size,
-                                         full_size,
-                                         game_resolution)
-            tank.params = recalculate_params(tank)
+            for obj in objs:
+                obj.Rect = recalculate_rect(obj,
+                                            fullscreen,
+                                            window_size,
+                                            full_size,
+                                            game_resolution)
+                obj.params = recalculate_params(obj)
         if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
             traps.append(Trap(tank, 'tank'))
         if event.type == pg.QUIT:
@@ -248,9 +261,7 @@ while not finished:
             elif event.button == 3:
                 print(tank.hp)
                 print(tank1.hp)
-                print(traps)
-            else:
-                pass
+                print(tank1.speed_x, tank1.speed_y)
     pg.display.update()
 
 pg.quit()
