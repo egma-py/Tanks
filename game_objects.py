@@ -35,6 +35,7 @@ class Tank:
         self.speed = 3
         self.hp = 20
         self.ammo = 100
+        self.traps = 3
         self.boost_time = 0
         self.color = color
 
@@ -1185,6 +1186,7 @@ class Trap:
     Description: Each object can leave a trap
     Your ones are visible, enemies' ones are not.
     '''
+    
     def __init__(self, obj, whose):
         self.type = whose
         self.x = obj.center[0]
@@ -1290,6 +1292,7 @@ class Bonus:
     Description: if there is a bonus after
     enemy's death, this class describes it.
     '''
+    
     def __init__(self, enemy, bonus_type):
         '''Bonus types:
             - HP
@@ -1338,10 +1341,6 @@ class Bonus:
                 tank.ammo += 20
             elif self.type == 'Speed':
                 tank.boost_time += FPS * 5
-
-
-class HUD:
-    pass
 
 
 class Level:
