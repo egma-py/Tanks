@@ -11,8 +11,8 @@ from tank import *
 
 class Enemy:
     '''ENEMY
-    
-    Description: object Enemy is also one of the main 
+
+    Description: object Enemy is also one of the main
     objects in the game. You cannot control it. It
     lives its own life:
         - moves
@@ -22,21 +22,22 @@ class Enemy:
     Some functions there work the same as in class Tank.
     Some special functions are described.
     '''
+
     def __init__(self, Rect, color):
         '''
         Let me describe some variables, defined
         in this function:
-            
-        angle - it defines enemy's orientation 
+
+        angle - it defines enemy's orientation
         in the space. This parameter is also
         needed for enemy's shooting
-        
+
         freeze - when an enemy turns, freeze
-        becoming equal to 2 seconds. It is 
+        becoming equal to 2 seconds. It is
         necessary, otherwise an enemy will
         be always rotating at the same position.
-        
-        Shoot and trap factors are created to define, 
+
+        Shoot and trap factors are created to define,
         when the enemy "wants" to shoot.
         '''
         # Coordinates and useful parameters
@@ -64,7 +65,7 @@ class Enemy:
         self.shoot_factor = 0
         self.trap_factor = 0
         self.color = color
-        
+
     def shoot(self, enemy_bullets):
         enemy_bullets.append(EnemyBullet(self, enemy_bullets))
 
@@ -108,40 +109,40 @@ class Enemy:
             self.cannon_r = self.params[1]
             self.cannon_w = self.params[2]
             self.tower_r = self.params[3]
-            tank_pos = (self.x + int(self.Rect[1][0] * 0.1), 
+            tank_pos = (self.x + int(self.Rect[1][0] * 0.1),
                         self.y + int(self.Rect[1][1] * 0.1))
-            size = (int(self.Rect[1][0] * 0.8), 
+            size = (int(self.Rect[1][0] * 0.8),
                     int(self.Rect[1][1] * 0.8))
             # Drawing the enemy's body
             pgd.rect(screen, self.color, (tank_pos, size))
             pgd.circle(screen, RED, self.center, self.tower_r)
             # Defining the cannon's position
             if self.angle == 0:
-                cannon_pos = (self.center[0], 
+                cannon_pos = (self.center[0],
                               self.center[1] + self.cannon_l)
             if self.angle == 90:
-                cannon_pos = (self.center[0] - self.cannon_l, 
+                cannon_pos = (self.center[0] - self.cannon_l,
                               self.center[1])
             if self.angle == 180:
-                cannon_pos = (self.center[0], 
+                cannon_pos = (self.center[0],
                               self.center[1] - self.cannon_l)
             if self.angle == 270:
-                cannon_pos = (self.center[0] + self.cannon_l, 
+                cannon_pos = (self.center[0] + self.cannon_l,
                               self.center[1])
             # Drawing the enemy's cannon
             pgd.line(screen, RED, self.center, cannon_pos, self.cannon_w)
             pgd.circle(screen, RED, cannon_pos, self.cannon_r)
             # Drawing HP line
-            self.HP_line_length = int(1.5*self.Rect[1][0])
-            start_pos = (self.x - int(0.25*self.Rect[1][0]),
-                         self.y + int(1.1*self.Rect[1][0]))
+            self.HP_line_length = int(1.5 * self.Rect[1][0])
+            start_pos = (self.x - int(0.25 * self.Rect[1][0]),
+                         self.y + int(1.1 * self.Rect[1][0]))
             length = self.HP_line_length
-            current_HP = int(self.HP_line_length*self.hp/10)
+            current_HP = int(self.HP_line_length * self.hp / 10)
             # Box and HP line
             pgd.rect(screen, RED, ((start_pos), (current_HP, 5)))
             pgd.rect(screen, BLACK, ((start_pos), (length, 5)), 1)
 
-    def die(self, bonuses, explosions, FPS, fullscreen, 
+    def die(self, bonuses, explosions, FPS, fullscreen,
             full_block, window_block, dangerous):
         '''
         This function is called when you kill an enemy
@@ -156,12 +157,12 @@ class Enemy:
             New explosion will be added there.
         FPS : int
             Explosion's time of life depends on it.
-            
+
         fullscreen : bool
         full_block : int
         window_block : int
             Explosion's radius will depend on fullscreen mode
-            
+
         dangerous : bool
             If an explosion is not dangerous, there
             will be no risks to be damaged by it.
@@ -279,7 +280,7 @@ class Enemy:
             return check
 
         inwall = False
-        pos = (self.x + int(self.Rect[1][0] * 0.1), 
+        pos = (self.x + int(self.Rect[1][0] * 0.1),
                self.y + int(self.Rect[1][1] * 0.1))
         x = pos[0]
         y = pos[1]
@@ -302,7 +303,7 @@ class Enemy:
 
     def in_turn(self, turns):
         '''
-        Works the same way as in_wall, but checks if 
+        Works the same way as in_wall, but checks if
         an enemy is in turn or not.
 
         Parameters
@@ -387,8 +388,8 @@ class Enemy:
 
     def move(self, blocks, walls_hp, FPS, fullscreen):
         '''
-        This function defines, where an enemy "wants" 
-        to move. If it collides a wall, it turns into 
+        This function defines, where an enemy "wants"
+        to move. If it collides a wall, it turns into
         the other directon.
         If it is in a turn, it randomly choose: turn or
         not turn.
@@ -436,12 +437,13 @@ class Enemy:
 
 class EnemyBullet:
     '''ENEMY BULLET
-    
+
     Description: if an enemy shoots, this class
     describes the behaviour of enemy's bullet.
     Functions close_walls and in_wall work the same way
     as other classes' ones.
     '''
+
     def __init__(self, enemy, enemy_bullets):
         self.active = True
         self.in_tank = False
@@ -557,11 +559,11 @@ class EnemyBullet:
             self.x = crash_wall[0][0][0] + crash_wall[0][1][0] // 2
             self.y = crash_wall[0][0][1] + crash_wall[0][1][0] // 2
         return inwall, crash_wall
-    
+
     def app(self, screen, walls, walls_hp, fullscreen):
         '''
         This function draw a bullet.
-        In addition this function checks if 
+        In addition this function checks if
         a bullet collides into a wall.
 
         Parameters
@@ -601,14 +603,14 @@ class EnemyBullet:
 
 class Bullet:
     '''BULLET
-    
+
     Description: if you shoot, this class
     describes the behaviour of tank's bullet.
     Functions close_walls and in_wall work the same way
     as other classes' ones.
     '''
     Speed = 20
-    
+
     def __init__(self, tank, bullets, mouse_pos):
         self.active = True
         self.in_enemy = False
@@ -728,11 +730,11 @@ class Bullet:
             self.x = crash_wall[0][0][0] + crash_wall[0][1][0] // 2
             self.y = crash_wall[0][0][1] + crash_wall[0][1][0] // 2
         return inwall, crash_wall
-    
+
     def app(self, screen, walls, walls_hp, fullscreen):
         '''
         This function draw a bullet.
-        In addition this function checks if 
+        In addition this function checks if
         a bullet collides into a wall.
 
         Parameters
@@ -772,7 +774,7 @@ class Bullet:
 
 class Explosion:
     '''EXPLOSION
-    
+
     Description: if bullet collides, mine exploses or
     enemy dies, this class describes the behaviour of
     each explosion.
@@ -817,7 +819,7 @@ class Explosion:
     def check_objects(self, sensitive_obj):
         '''
         If an explose is dangerous, it is
-        needed to check if an object will 
+        needed to check if an object will
         get harm or not
 
         Parameters
@@ -835,7 +837,7 @@ class Explosion:
             obj_pos = sensitive_obj.center
             x = obj_pos[0]
             y = obj_pos[1]
-            distance = m.sqrt((self.x - x)**2 + (self.y - y)**2)
+            distance = m.sqrt((self.x - x) ** 2 + (self.y - y) ** 2)
             if distance <= self.radius:
                 sensitive_obj.hp -= 1
                 self.active = False
@@ -843,11 +845,11 @@ class Explosion:
 
 class Trap:
     '''TRAP
-    
+
     Description: Each object can leave a trap
     Your ones are visible, enemies' ones are not.
     '''
-    
+
     def __init__(self, obj, whose):
         self.type = whose
         self.x = obj.center[0]
@@ -907,9 +909,9 @@ class Trap:
 
 class Walls:
     '''WALLS
-    
+
     Description: contains only the list of the walls
-    in the level. It is useful to work only with 
+    in the level. It is useful to work only with
     walls to control tank's motion.
     '''
 
@@ -949,11 +951,11 @@ class Walls:
 
 class Bonus:
     '''BONUS
-    
+
     Description: if there is a bonus after
     enemy's death, this class describes it.
     '''
-    
+
     def __init__(self, enemy, bonus_type):
         '''Bonus types:
             - HP
@@ -1006,7 +1008,7 @@ class Bonus:
 
 class Level:
     '''LEVEL
-    
+
     Description: this class contains all the info about blocks
     and type of blocks in current level. The info about a level
     is read from file.

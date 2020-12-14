@@ -9,14 +9,18 @@ from textures import *
 from game_objects import *
 from enemy import *
 
+pg.font.init()
+font = pg.font.Font(None, 25)
+
 
 class Tank:
     '''TANK
-    
+
     Description: object Tank is the main object in the
     game. We can absolutely control it: shooting, lea-
     ving mines, aiming and moving.
     '''
+
     def __init__(self, Rect, color):
         # Coordinates and useful variables
         self.Rect = Rect
@@ -40,6 +44,38 @@ class Tank:
         self.traps = 3
         self.boost_time = 0
         self.color = color
+        # HUD info
+        self.HUD_pos = (self.x + int(1.2 * self.Rect[1][0]),
+                        self.y)
+        self.HUD_size = (self.Rect[1][0] * 3,
+                         self.Rect[1][0] * 2.5)
+
+    def show_HUD(self, screen):
+        '''
+        This function shows us current conditions
+        of the tank if show_HUD bool is true
+
+        Parameters
+        ----------
+        screen : Surface
+
+        Returns
+        -------
+        None.
+
+        '''
+        self.HUD_pos = (self.x + int(1.2 * self.Rect[1][0]),
+                        self.y)
+        current_HP = font.render(str(self.hp) + '/20', True, RED)
+        current_ammo = font.render('Ammo: ' + str(self.ammo), True, RED)
+        current_traps = font.render('Traps: ' + str(self.traps), True, RED)
+        current_boost = font.render('Boost: +', True, RED)
+        pgd.rect(screen, YELLOW, (self.HUD_pos, self.HUD_size))
+        screen.blit(current_HP, (self.HUD_pos[0] + 2, self.HUD_pos[1] + 2))
+        screen.blit(current_ammo, (self.HUD_pos[0] + 2, self.HUD_pos[1] + 20))
+        screen.blit(current_traps, (self.HUD_pos[0] + 2, self.HUD_pos[1] + 40))
+        if self.boost_time > 0:
+            screen.blit(current_boost, (self.HUD_pos[0] + 2, self.HUD_pos[1] + 60))
 
     def app(self, screen, mouse_pos, fullscreen):
         '''
@@ -82,9 +118,9 @@ class Tank:
         self.cannon_r = self.params[1]
         self.cannon_w = self.params[2]
         self.tower_r = self.params[3]
-        tank_pos = (self.x + int(self.Rect[1][0] * 0.1), 
+        tank_pos = (self.x + int(self.Rect[1][0] * 0.1),
                     self.y + int(self.Rect[1][1] * 0.1))
-        size = (int(self.Rect[1][0] * 0.8), 
+        size = (int(self.Rect[1][0] * 0.8),
                 int(self.Rect[1][1] * 0.8))
         # Drawing tank's body
         pgd.rect(screen, self.color, (tank_pos, size))
@@ -124,7 +160,7 @@ class Tank:
             collides into a wall.
         walls_hp : list
             If wall is destroyed, its HP is zero. So
-            if HP is zero, the tank can move through 
+            if HP is zero, the tank can move through
             it.
         moving : list
             A list of four bools; each of them can
@@ -170,7 +206,7 @@ class Tank:
         '''
         This function doesn't return anything, because
         this one only checks if definite button  is pu-
-        shed. If it is, the function continues to move 
+        shed. If it is, the function continues to move
         the tank.
 
         Parameters
@@ -183,7 +219,7 @@ class Tank:
             collides into a wall.
         walls_hp : list
             If wall is destroyed, its HP is zero. So
-            if HP is zero, the tank can move through 
+            if HP is zero, the tank can move through
             it.
         moving : list
             A list of four bools; each of them can
@@ -236,7 +272,7 @@ class Tank:
         -------
         moving : list
             If definite button is pushed up and
-            others are not, only pushed up one 
+            others are not, only pushed up one
             will be changed to a False statement
             and tank's moves in this direction
             will stop.
@@ -339,7 +375,7 @@ class Tank:
             return check
 
         inwall = False
-        pos = (self.x + int(self.Rect[1][0] * 0.1), 
+        pos = (self.x + int(self.Rect[1][0] * 0.1),
                self.y + int(self.Rect[1][1] * 0.1))
         x = pos[0]
         y = pos[1]

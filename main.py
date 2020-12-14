@@ -164,6 +164,7 @@ full_block_size = min((full_size[0] // number_x), (full_size[1] // number_y))
 fullscreen = False
 finished = False
 game = False
+show_HUD = False
 tank_is_moving = [False, False, False, False]
 
 tank = Tank([[400, 137], (window_block_size, window_block_size)], LIGHT_GREEN)
@@ -186,10 +187,10 @@ while not finished:
         pass  # FIXME level's blocks appear
     clock.tick(FPS)
     mouse_pos = pg.mouse.get_pos()
-    block_params = define_grid(fullscreen, window_size, full_size, 
+    block_params = define_grid(fullscreen, window_size, full_size,
                                level1.resolution, screen)
     spawn = level1.app(screen, block_params, walls_hp)
-    spawn_actions(objs, enemies, spawn, window_block_size, 
+    spawn_actions(objs, enemies, spawn, window_block_size,
                   full_block_size, fullscreen)
     walls = Walls(level1, block_params)
     for bonus in bonuses:
@@ -246,6 +247,8 @@ while not finished:
             explosion.check_objects(obj)
         if not explosion.active:
             explosions.remove(explosion)
+    if show_HUD:
+        tank.show_HUD(screen)
     for event in pg.event.get():
         if event.type == pg.KEYDOWN:
             controls = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]
@@ -273,6 +276,10 @@ while not finished:
             if tank.traps > 0:
                 traps.append(Trap(tank, 'tank'))
                 tank.traps -= 1
+        if event.type == pg.KEYDOWN and event.key == pg.K_TAB:
+            show_HUD = True
+        if event.type == pg.KEYUP and event.key == pg.K_TAB:
+            show_HUD = False
         if event.type == pg.QUIT:
             finished = True
         if event.type == pg.MOUSEBUTTONDOWN:
