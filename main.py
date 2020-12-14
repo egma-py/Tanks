@@ -8,6 +8,8 @@ from random import randint
 from colors import *
 from menu import *
 from game_objects import *
+from tank import *
+from enemy import *
 
 
 def get_level(level: int):
@@ -262,6 +264,8 @@ while not finished:
                                             full_size, game_resolution)
                 obj.params = recalculate_params(obj)
             recalculate_list(traps, fullscreen, window_size,
+                             full_size, game_resolution)
+            recalculate_list(enemy_traps, fullscreen, window_size,
                              full_size, game_resolution)
             recalculate_list(bonuses, fullscreen, window_size,
                              full_size, game_resolution)
