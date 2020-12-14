@@ -230,3 +230,21 @@ class Menu: #FIXME to be made
     dialogue windows with buttons
     to interact with user.
     '''
+    def __init__(self, pos, max_size, active):
+        self.x = pos[0]
+        self.y = pos[1]
+        self.size_x = max_size[0]
+        self.size_y = max_size[1]
+        self.buttons = []
+        self.active = active
+
+    def app(self, screen, BACKGROUND, mouse_pos):
+        Rect = ((self.x, self.y), (self.size_x, self.size_y))
+        roundrect(screen, (DARK_YELLOW, BACKGROUND), Rect, 0, 20)
+        for button in self.buttons:
+            button.app(BLACK, mouse_pos)
+        
+    def add_buttons(self, buttons):
+        self.buttons = []
+        for button in buttons:
+            self.buttons.append(button)

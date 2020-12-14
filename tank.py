@@ -13,6 +13,9 @@ pg.font.init()
 font = pg.font.Font(None, 25)
 
 
+pg.font.init()
+font = pg.font.Font(None, 25)
+
 class Tank:
     '''TANK
 
@@ -64,11 +67,11 @@ class Tank:
         None.
 
         '''
-        self.HUD_pos = (self.x + int(1.2 * self.Rect[1][0]),
+        self.HUD_pos = (self.x + int(1.2*self.Rect[1][0]),
                         self.y)
-        current_HP = font.render(str(self.hp) + '/20', True, RED)
-        current_ammo = font.render('Ammo: ' + str(self.ammo), True, RED)
-        current_traps = font.render('Traps: ' + str(self.traps), True, RED)
+        current_HP = font.render(str(self.hp)+'/20', True, RED)
+        current_ammo = font.render('Ammo: '+str(self.ammo), True, RED)
+        current_traps = font.render('Traps: '+str(self.traps), True, RED)
         current_boost = font.render('Boost: +', True, RED)
         pgd.rect(screen, YELLOW, (self.HUD_pos, self.HUD_size))
         screen.blit(current_HP, (self.HUD_pos[0] + 2, self.HUD_pos[1] + 2))
@@ -76,7 +79,7 @@ class Tank:
         screen.blit(current_traps, (self.HUD_pos[0] + 2, self.HUD_pos[1] + 40))
         if self.boost_time > 0:
             screen.blit(current_boost, (self.HUD_pos[0] + 2, self.HUD_pos[1] + 60))
-
+    
     def app(self, screen, mouse_pos, fullscreen):
         '''
         That's the main function in this class. It checks

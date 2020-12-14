@@ -143,6 +143,51 @@ def enemies_live(objs, enemies):
             objs.remove(enemy)
 
 
+def level_menu_actions(level_menu, mouse_pos, main_menu):
+    level_number = None
+    for button in level_menu.buttons:
+        if button.check_pos(mouse_pos) and level_menu.active:
+            if button.button_text == 'Level 1':
+                level_number = 1
+                main_menu.active = True
+                level_menu.active = False
+            if button.button_text == 'Level 2':
+                level_number = 2
+                main_menu.active = True
+                level_menu.active = False
+            if button.button_text == 'Level 3':
+                level_number = 3
+                main_menu.active = True
+                level_menu.active = False
+            if button.button_text == 'Level 4':
+                level_number = 4
+                main_menu.active = True
+                level_menu.active = False
+            if button.button_text == 'Level 5':
+                level_number = 5
+                main_menu.active = True
+                level_menu.active = False
+            if button.button_text == '. . . . .':
+                main_menu.active = True
+                level_menu.active = False
+    return level_number
+
+
+def main_menu_actions(level_menu, mouse_pos, main_menu, level_number, menu_mode):
+    level, walls_hp = None, None
+    for button in main_menu.buttons:
+        if button.check_pos(mouse_pos) and main_menu.active:
+            if button.button_text == 'Start game' and level_number != None:
+                level = Level(get_level(level_number))
+                walls_hp = level.get_walls_hp()
+                menu_mode = False
+                main_menu.active = False
+            elif button.button_text == 'Choose level':
+                main_menu.active = False
+                level_menu.active = True
+    return level, walls_hp, menu_mode
+
+
 pg.init()
 pg.font.init()
 
@@ -161,9 +206,9 @@ number_y = game_resolution[1]
 window_block_size = min((window_size[0] // number_x), (window_size[1] // number_y))
 full_block_size = min((full_size[0] // number_x), (full_size[1] // number_y))
 
+menu_mode = True
 fullscreen = False
 finished = False
-game = False
 show_HUD = False
 tank_is_moving = [False, False, False, False]
 
@@ -177,88 +222,147 @@ traps = []
 enemy_traps = []
 bonuses = []
 spawn = None
-level1 = Level(get_level(1))
-walls_hp = level1.get_walls_hp()
+tank_spawn = None
 GROUND_COLOR = DARK_GRASS
+BACKGROUND = DARK_GRAY
+
+# At first info about level is unknown
+level = None
+level_number = None
+# Making menus
+main_menu = Menu((10, 10), (300, 70), True)
+level_menu = Menu((400, 10), (300, 200), False)
+# Defining buttons
+begin = Button(screen, main_menu.x + 10, main_menu.y + 15, 
+               main_menu.size_x - 20, 20, [list(RED), list(BLACK)],
+               'Start game', 10)
+choose_level = Button(screen, main_menu.x + 10, main_menu.y + 40, 
+                      main_menu.size_x - 20, 20, [list(RED), list(BLACK)],
+                      'Choose level', 10)
+return_button = Button(screen, level_menu.x + 10, level_menu.y + 15, 
+                       level_menu.size_x - 20, 20, [list(RED), list(BLACK)],
+                       '. . . . .', 10)
+level1 = Button(screen, level_menu.x + 10, level_menu.y + 40, 
+                level_menu.size_x - 20, 20, [list(RED), list(BLACK)],
+                'Level 1', 10)
+level2 = Button(screen, level_menu.x + 10, level_menu.y + 65, 
+                level_menu.size_x - 20, 20, [list(RED), list(BLACK)],
+                'Level 2', 10)
+level3 = Button(screen, level_menu.x + 10, level_menu.y + 90, 
+                level_menu.size_x - 20, 20, [list(RED), list(BLACK)],
+                'Level 3', 10)
+level4 = Button(screen, level_menu.x + 10, level_menu.y + 115, 
+                level_menu.size_x - 20, 20, [list(RED), list(BLACK)],
+                'Level 4', 10)
+level5 = Button(screen, level_menu.x + 10, level_menu.y + 140, 
+                level_menu.size_x - 20, 20, [list(RED), list(BLACK)],
+                'Level 5', 10)
+# Adding buttons into definite menu
+main_menu.add_buttons([begin, choose_level])
+level_menu.add_buttons([level1, level2, level3, level4, level5, return_button])
+menus = [main_menu, level_menu]
 
 while not finished:
-    screen.fill(GROUND_COLOR)
-    if game:
-        pass  # FIXME level's blocks appear
-    clock.tick(FPS)
     mouse_pos = pg.mouse.get_pos()
-    block_params = define_grid(fullscreen, window_size, full_size,
-                               level1.resolution, screen)
-    spawn = level1.app(screen, block_params, walls_hp)
-    spawn_actions(objs, enemies, spawn, window_block_size,
-                  full_block_size, fullscreen)
-    walls = Walls(level1, block_params)
-    for bonus in bonuses:
-        bonus.app(screen, fullscreen)
-        bonus.check_tank(tank, FPS)
-        if not bonus.active:
-            bonuses.remove(bonus)
-    for trap in traps:
-        trap.app(screen, fullscreen)
-        for obj in objs:
-            if obj != tank:
-                obj.hp = trap.check_objs(obj)
-        if not trap.active:
-            trap.explose(explosions, FPS, fullscreen,
-                         full_block_size, window_block_size, False)
-            traps.remove(trap)
-    for trap in enemy_traps:
-        trap.app(screen, fullscreen)
-        tank.hp = trap.check_objs(tank)
-        if not trap.active:
-            trap.explose(explosions, FPS, fullscreen,
-                         full_block_size, window_block_size, False)
-            enemy_traps.remove(trap)
-    tank.app(screen, mouse_pos, fullscreen)
-    tank.continue_move(walls.walls, walls_hp, tank_is_moving)
-    enemies_live(objs, enemies)
-    for bullet in enemy_bullets:
-        walls_hp = bullet.app(screen, walls.walls, walls_hp, fullscreen)
-        tank.hp = bullet.check_hit(tank)
-        if not bullet.active:
-            bullet.explose(explosions, FPS, fullscreen,
-                           full_block_size, window_block_size, True)
-            enemy_bullets.remove(bullet)
-        if bullet.in_tank:
-            bullet.explose(explosions, FPS, fullscreen,
-                           full_block_size, window_block_size, False)
-            enemy_bullets.remove(bullet)
-    for bullet in bullets:
-        walls_hp = bullet.app(screen, walls.walls, walls_hp, fullscreen)
-        for obj in objs:
-            if obj != tank:
-                obj.hp = bullet.check_hit(obj)
-        if not bullet.active:
-            bullet.explose(explosions, FPS, fullscreen,
-                           full_block_size, window_block_size, True)
-            bullets.remove(bullet)
-        if bullet.in_enemy:
-            bullet.explose(explosions, FPS, fullscreen,
-                           full_block_size, window_block_size, False)
-            bullets.remove(bullet)
-    for explosion in explosions:
-        explosion.app(screen)
-        for obj in objs:
-            explosion.check_objects(obj)
-        if not explosion.active:
-            explosions.remove(explosion)
-    if show_HUD:
-        tank.show_HUD(screen)
+    if menu_mode:
+        screen.fill(BACKGROUND)
+        for menu in menus:
+            if menu.active:
+                menu.app(screen, BACKGROUND, mouse_pos)
+    else:
+        screen.fill(GROUND_COLOR)
+        clock.tick(FPS)
+        mouse_pos = pg.mouse.get_pos()
+        block_params = define_grid(fullscreen, window_size, full_size, 
+                                   level.resolution, screen)
+        spawn = level.app(screen, block_params, walls_hp)
+        spawn_actions(objs, enemies, spawn, window_block_size, 
+                      full_block_size, fullscreen)
+        walls = Walls(level, block_params)
+        for bonus in bonuses:
+            bonus.app(screen, fullscreen)
+            bonus.check_tank(tank, FPS)
+            if not bonus.active:
+                bonuses.remove(bonus)
+        for trap in traps:
+            trap.app(screen, fullscreen)
+            for obj in objs:
+                if obj != tank:
+                    obj.hp = trap.check_objs(obj)
+            if not trap.active:
+                trap.explose(explosions, FPS, fullscreen,
+                             full_block_size, window_block_size, False)
+                traps.remove(trap)
+        for trap in enemy_traps:
+            trap.app(screen, fullscreen)
+            tank.hp = trap.check_objs(tank)
+            if not trap.active:
+                trap.explose(explosions, FPS, fullscreen,
+                             full_block_size, window_block_size, False)
+                enemy_traps.remove(trap)
+        tank.app(screen, mouse_pos, fullscreen)
+        tank.continue_move(walls.walls, walls_hp, tank_is_moving)
+        enemies_live(objs, enemies)
+        for bullet in enemy_bullets:
+            walls_hp = bullet.app(screen, walls.walls, walls_hp, fullscreen)
+            tank.hp = bullet.check_hit(tank)
+            if not bullet.active:
+                bullet.explose(explosions, FPS, fullscreen,
+                               full_block_size, window_block_size, True)
+                enemy_bullets.remove(bullet)
+            if bullet.in_tank:
+                bullet.explose(explosions, FPS, fullscreen,
+                               full_block_size, window_block_size, False)
+                enemy_bullets.remove(bullet)
+        for bullet in bullets:
+            walls_hp = bullet.app(screen, walls.walls, walls_hp, fullscreen)
+            for obj in objs:
+                if obj != tank:
+                    obj.hp = bullet.check_hit(obj)
+            if not bullet.active:
+                bullet.explose(explosions, FPS, fullscreen,
+                               full_block_size, window_block_size, True)
+                bullets.remove(bullet)
+            if bullet.in_enemy:
+                bullet.explose(explosions, FPS, fullscreen,
+                               full_block_size, window_block_size, False)
+                bullets.remove(bullet)
+        for explosion in explosions:
+            explosion.app(screen)
+            for obj in objs:
+                explosion.check_objects(obj)
+            if not explosion.active:
+                explosions.remove(explosion)
+        if show_HUD:
+            tank.show_HUD(screen)
+        if tank.hp <= 0:
+            menu_mode = True
+            main_menu.active = True
+            tank.hp = 20
+            tank.x, tank.y = 400, 137
+            objs = [tank]
+            enemies = []
+            bullets = []
+            enemy_bullets = []
+            explosions = []
+            traps = []
+            enemy_traps = []
+            bonuses = []
+            spawn = None
+            level = None
+            level_number = None
     for event in pg.event.get():
         if event.type == pg.KEYDOWN:
-            controls = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]
-            if event.key in controls:
-                tank_is_moving = tank.move(event, walls.walls, walls_hp, tank_is_moving)
+            if not menu_mode:
+                controls = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]
+                if event.key in controls:
+                    tank_is_moving = tank.move(event, walls.walls, walls_hp, tank_is_moving)
         if event.type == pg.KEYUP:
-            controls = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]
-            if event.key in controls:
-                tank_is_moving = tank.stop(event, tank_is_moving)
-        if event.type == pg.KEYDOWN and event.key == pg.K_F11:  # FIXME компактность
+            if not menu_mode:    
+                controls = [pg.K_RIGHT, pg.K_LEFT, pg.K_UP, pg.K_DOWN]
+                if event.key in controls:
+                    tank_is_moving = tank.stop(event, tank_is_moving)
+        if event.type == pg.KEYDOWN and event.key == pg.K_F11:
             # Change window mode
             fullscreen = change_fullscreen(fullscreen, window_size,
                                            full_size, GROUND_COLOR)
@@ -273,22 +377,32 @@ while not finished:
             recalculate_list(bonuses, fullscreen, window_size,
                              full_size, game_resolution)
         if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
-            if tank.traps > 0:
-                traps.append(Trap(tank, 'tank'))
-                tank.traps -= 1
+            if not menu_mode:
+                if tank.traps > 0:
+                    traps.append(Trap(tank, 'tank'))
+                    tank.traps -= 1
         if event.type == pg.KEYDOWN and event.key == pg.K_TAB:
-            show_HUD = True
+            if not menu_mode:
+                show_HUD = True
         if event.type == pg.KEYUP and event.key == pg.K_TAB:
-            show_HUD = False
+            if not menu_mode:
+                show_HUD = False
         if event.type == pg.QUIT:
             finished = True
-        if event.type == pg.MOUSEBUTTONDOWN:
-            if event.button == 1:
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            if not menu_mode:
                 if tank.ammo > 0:
                     bullets.append(Bullet(tank, bullets, mouse_pos))
                     tank.ammo -= 1
-            elif event.button == 3:
-                print(bonuses)
+            else:
+                level, walls_hp, menu_mode = main_menu_actions(level_menu, 
+                                                               mouse_pos, 
+                                                               main_menu, 
+                                                               level_number, 
+                                                               menu_mode)
+                level_number = level_menu_actions(level_menu, 
+                                                  mouse_pos, 
+                                                  main_menu)
     pg.display.update()
 
 pg.quit()
