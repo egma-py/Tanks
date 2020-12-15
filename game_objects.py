@@ -857,7 +857,7 @@ class Trap:
         self.active = True
         self.r = 5
 
-    def app(self, screen, fullscreen):  # FIXME мигание
+    def app(self, screen, fullscreen):
         '''
         Checks, whose the mine is
         if tank's -> visible
@@ -971,13 +971,8 @@ class Bonus:
         if fullscreen:
             self.r = 12
         else:
-            self.r = 6
-        if self.type == 'HP':
-            pgd.circle(screen, RED, (self.x, self.y), self.r)
-        elif self.type == 'Ammo':
-            pgd.circle(screen, YELLOW, (self.x, self.y), self.r)
-        elif self.type == 'Speed':
-            pgd.circle(screen, BLUE, (self.x, self.y), self.r)
+            self.r = 6    
+        pgd.circle(screen, RED, (self.x, self.y), self.r)
 
     def check_tank(self, tank, FPS):
         '''
@@ -1060,6 +1055,7 @@ class Level:
         start_x = block_params[0][0]
         start_y = block_params[0][1]
         index = 0
+        spawns = []
         # Enumerating block lines
         for m in range(len(self.blocks)):
             # Enumerating blocks in each line
@@ -1087,4 +1083,7 @@ class Level:
                     index += 1
                 if self.blocks[m][k] == 's':
                     spawn = [Rect[0][0] + 5, Rect[0][1] + 5]
-        return spawn
+                    spawns.append(spawn)
+                if self.blocks[m][k] == 'p':
+                    tank_spawn = [Rect[0][0] + 5, Rect[0][1] + 5]
+        return spawns, tank_spawn

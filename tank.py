@@ -25,6 +25,7 @@ class Tank:
     '''
 
     def __init__(self, Rect, color):
+        self.spawned = False
         # Coordinates and useful variables
         self.Rect = Rect
         self.x = Rect[0][0]
@@ -43,8 +44,8 @@ class Tank:
         # Tank's game start parameters
         self.speed = 3
         self.hp = 20
-        self.ammo = 100
-        self.traps = 3
+        self.ammo = 350
+        self.traps = 10
         self.boost_time = 0
         self.color = color
         # HUD info

@@ -1,0 +1,14 @@
+^------^---------^-----^
+|oooooo|ootoootoo|ooooo|
+|osoooo|ooo---ootVtoost|
+|otoootttto---ootVtooot|
+^-H-oootVto---ootVtooot|
+|otootttVto---ootVtooot|
+|ooooHHHVttoootoo|ooooo|
+|ooootto|oooooooo|ooooo|
+|ooooopo|ototoooo|ooooo|
+|oootooo|oo|ooootototot|
+|oooo---^oo|ooooooo|ooo|
+|tootooooto|oosoooo|oso|
+|tooooooooo|ooootot|ooo|
+^----------^-------^---^

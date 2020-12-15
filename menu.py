@@ -1,4 +1,3 @@
-
 from colors import *
 
 import pygame as pg
@@ -8,7 +7,22 @@ import math as m
 
 def arc(screen, color, Rect, start_angle, stop_angle, width=0):
     '''
-    draws an arc which is better than pygame's one
+    This function draws an arc better then pygame does.
+
+    Parameters
+    ----------
+    screen : Surface
+    color : tuple or list
+    Rect : tuple or list
+    start_angle : int
+    stop_angle : int
+    width : int, optional
+        The default is 0.
+
+    Returns
+    -------
+    None.
+
     '''
     start_angle_to_deg = int((start_angle*360)/(2*m.pi))
     stop_angle_to_deg = int((stop_angle*360)/(2*m.pi))
@@ -16,14 +30,17 @@ def arc(screen, color, Rect, start_angle, stop_angle, width=0):
     y = Rect[0][1]
     xr = Rect[1][0]//2
     yr = Rect[1][1]//2
+    # If width if more than 4, arc is drawn in circles, else in lines(for quality)
     if width >= 4:    
         while start_angle_to_deg != stop_angle_to_deg:
+            # Dividing an arc into pieces
             dx = int(xr*m.cos(2*m.pi*start_angle_to_deg/360))
             dy = -int(yr*m.sin(2*m.pi*start_angle_to_deg/360))
             pgd.circle(screen, color, (x+xr+dx, y+yr+dy), width//2)
             start_angle_to_deg += 1
     else:     
         while start_angle_to_deg != stop_angle_to_deg:
+            # Dividing an arc into pieces
             dx0 = int(xr*m.cos(2*m.pi*start_angle_to_deg/360)) 
             dy0 = -int(yr*m.sin(2*m.pi*start_angle_to_deg/360))
             dx = int(xr*m.cos(2*m.pi*start_angle_to_deg/360))
@@ -33,16 +50,30 @@ def arc(screen, color, Rect, start_angle, stop_angle, width=0):
 
 
 def roundrect(screen, colors, Rect, width=0, radius=0, R=[-1,-1,-1,-1]):
-    """
-    screen - game surface
-    colors[0] - rect color
-    colors[1] - background color
-    Rect = ((x, y), (length, height))
-    width - if 0 -> filled rect; else with borders with width
-            if width number isn't even -> +1
-    radius - if all corners are rounded similary
-    R - if you wanna define the radius of each corner
-    """
+    '''
+    This function draws a rectangle with rounded 
+    corners, because pygame doesn't.
+    Each rounded corner is drawn with cirlce(width=0)
+    If width is not zero, corner is drawn with arc function
+
+    Parameters
+    ----------
+    screen : Surface
+    colors : list
+        Contains background and recctangle colors.
+    Rect : tuple or list
+    width : int, optional
+        The default is 0.
+    radius : int, optional
+        The same for each border radius. The default is 0.
+    R : list, optional
+        List of each border radius. The default is [-1,-1,-1,-1].
+
+    Returns
+    -------
+    None.
+
+    '''
     x = Rect[0][0]
     y = Rect[0][1]
     l = Rect[1][0]
@@ -58,6 +89,7 @@ def roundrect(screen, colors, Rect, width=0, radius=0, R=[-1,-1,-1,-1]):
     for i in range(4):
         if R[i] > maxR:
             R[i] = maxR
+    # If width if zero, drawing is more simple
     def with_width0():
         if R == [-1, -1, -1, -1]:
             circle_centers = [(x+radius, y+radius),
@@ -142,12 +174,42 @@ def roundrect(screen, colors, Rect, width=0, radius=0, R=[-1,-1,-1,-1]):
         
 
 class Button:
+    '''BUTTON
+    
+    This class describes all the behaviour of a button,
+    depending on user's manipulations.
+    '''
     def __init__(self, screen, x, y, length, height, colors=[list(RED), list(BLACK)],
-                                                     text='None',
-                                                     radius=0,
-                                                     font=None,
-                                                     width=0,
-                                                     R=[-1, -1, -1, -1],):
+                 text='None',  radius=0, font=None,  width=0, R=[-1, -1, -1, -1],):
+        '''
+        Initializes
+
+        Parameters
+        ----------
+        screen : Surface
+        x : int
+        y : int
+        length : int
+        height : int
+        colors : list, optional
+            Button and background colors. 
+            The default is [list(RED), list(BLACK)].
+        text : string, optional
+            The text written on button. The default is 'None'.
+        radius : int, optional
+            Corner radius. The default is 0.
+        font : Font, optional
+            Text's font. The default is None.
+        width : int, optional
+            The default is 0.
+        R : list, optional
+            Corner radiuses. The default is [-1, -1, -1, -1].
+
+        Returns
+        -------
+        None.
+
+        '''
         self.screen = screen
         self.x = x
         self.y = y
@@ -169,6 +231,19 @@ class Button:
         
         
     def show(self, BACKGROUND):
+        '''
+        Is used in app function
+
+        Parameters
+        ----------
+        BACKGROUND : list or tuple
+            Background color.
+
+        Returns
+        -------
+        None.
+
+        '''
         roundrect(self.screen, 
                   (self.color[0], BACKGROUND),
                   ((self.x, self.y), (self.len, self.height)),
@@ -179,6 +254,22 @@ class Button:
     
     
     def app(self, BACKGROUND, m_pos):
+        '''
+        This function shows a button on screen
+        and checks if mouse_pos is in button or not.
+        
+        Parameters
+        ----------
+        BACKGROUND : list or tuple
+            Background color.
+        m_pos : tuple
+            Is used to scale if pos in a button.
+
+        Returns
+        -------
+        None.
+
+        '''
         if self.check_pos(m_pos):
             self.scale_plus(BACKGROUND)
             self.disapp(BACKGROUND)
@@ -189,6 +280,19 @@ class Button:
         
     
     def disapp(self, BACKGROUND):
+        '''
+        Is used to update screen
+
+        Parameters
+        ----------
+        BACKGROUND : list or tuple
+            Background colro.
+
+        Returns
+        -------
+        None.
+
+        '''
         Rect = ((self.x, self.y), (self.len, self.height))
         roundrect(self.screen, 
                   (self.color[0], BACKGROUND),
@@ -200,6 +304,18 @@ class Button:
         
         
     def check_pos(self, m_pos):
+        '''
+        Is used to check if mouse_pos is in button or not
+
+        Parameters
+        ----------
+        m_pos : tuple
+
+        Returns
+        -------
+        bool
+
+        '''
         b_left = self.x+self.len
         b_down = self.y+self.height
         if b_left >= m_pos[0] >= self.x and b_down >= m_pos[1] >= self.y:
@@ -209,6 +325,18 @@ class Button:
         
         
     def scale_plus(self, BACKGROUND):
+        '''
+        Scales a button in X axis(increasing size)
+
+        Parameters
+        ----------
+        BACKGROUND : list or tuple
+
+        Returns
+        -------
+        None.
+
+        '''
         self.disapp(BACKGROUND)
         if self.len <= self.lenmax:
             self.disapp(BLACK)
@@ -217,6 +345,18 @@ class Button:
         
         
     def scale_minus(self, BACKGROUND):
+        '''
+        Scales a button in X axis(reducing size)
+
+        Parameters
+        ----------
+        BACKGROUND : list or tuple
+
+        Returns
+        -------
+        None.
+
+        '''
         self.disapp(BACKGROUND)
         if self.len >= self.lenmin:
             self.disapp(BLACK)
@@ -224,8 +364,9 @@ class Button:
             self.len -= 2*self.ds
             
             
-class Menu: #FIXME to be made
-    '''
+class Menu:
+    '''MENU
+    
     class Menu is an object, which contains
     dialogue windows with buttons
     to interact with user.
@@ -239,12 +380,39 @@ class Menu: #FIXME to be made
         self.active = active
 
     def app(self, screen, BACKGROUND, mouse_pos):
+        '''
+        Shows a menu with button on screen
+
+        Parameters
+        ----------
+        screen : Surface
+        BACKGROUND : list or tuple
+        mouse_pos : tuple
+
+        Returns
+        -------
+        None.
+
+        '''
         Rect = ((self.x, self.y), (self.size_x, self.size_y))
         roundrect(screen, (DARK_YELLOW, BACKGROUND), Rect, 0, 20)
         for button in self.buttons:
             button.app(BLACK, mouse_pos)
         
     def add_buttons(self, buttons):
+        '''
+        Adds button into the menu
+
+        Parameters
+        ----------
+        buttons : list
+            A list of buttons prepared by user.
+
+        Returns
+        -------
+        None.
+
+        '''
         self.buttons = []
         for button in buttons:
             self.buttons.append(button)
