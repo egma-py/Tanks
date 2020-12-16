@@ -7,7 +7,6 @@ from colors import *
 from menu import *
 from textures import *
 from game_objects import *
-from enemy import *
 
 pg.font.init()
 font = pg.font.Font(None, 25)

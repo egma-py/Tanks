@@ -9,7 +9,6 @@ from colors import *
 from menu import *
 from game_objects import *
 from tank import *
-from enemy import *
 
 
 def get_level(level):

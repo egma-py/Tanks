@@ -855,7 +855,8 @@ class Trap:
         self.x = obj.center[0]
         self.y = obj.center[1]
         self.active = True
-        self.r = 5
+        self.r1 = 5
+        self.r2 = 1
 
     def app(self, screen, fullscreen):
         '''
@@ -874,11 +875,14 @@ class Trap:
 
         '''
         if fullscreen:
-            self.r = 10
+            self.r1 = 10
+            self.r2 = 2
         else:
-            self.r = 5
+            self.r1 = 5
+            self.r2 = 1
         if self.type == 'tank':
-            pgd.circle(screen, BLUE, (self.x, self.y), self.r)
+            pgd.circle(screen, BLUE, (self.x, self.y), self.r1)
+            pgd.circle(screen, RED, (self.x, self.y), self.r2)
 
     def check_objs(self, obj):
         '''
